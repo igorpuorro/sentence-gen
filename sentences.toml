@@ -1,0 +1,49 @@
+# Templates for sentence_gen.py. Syntax:
+#   {slot}    random item from [slots]
+#   {a|b|c}   one of the options ({muito|} = "muito" or nothing)
+#   [text]    the text half the time
+#   {:pool}   one emoji from that [emojis] pool, at that spot
+
+[settings]
+emoji_chance = 0.7   # chance of adding emojis at the end
+max_emojis = 2       # at most this many at the end
+
+[slots]
+saudacao = ["Bom dia", "Boa tarde", "Boa noite", "Oi, gente", "E aí, pessoal", "Fala, galera"]
+adj      = ["incrível", "lindo", "sensacional", "maravilhoso", "perfeito", "top demais"]
+reacao   = ["amei", "adorei", "fiquei apaixonado", "não paro de ver", "salvei aqui"]
+convite  = ["{Comenta|Escreve} aqui embaixo",  # slot items can hold markers too
+             "Me conta nos comentários", "Deixa sua opinião"]
+
+[emojis]
+feliz  = ["😄", "😊", "🥳", "😁"]
+fogo   = ["🔥", "💯", "⚡", "🚀"]
+amor   = ["❤️", "😍", "🥰", "💖"]
+aplauso = ["👏", "🙌", "👊"]
+olhar  = ["👀", "🤔", "🧐"]
+
+[[sentences]]
+text   = "{saudacao}! Esse vídeo ficou {adj} [de verdade]"
+emojis = ["feliz", "fogo"]
+weight = 2            # picked twice as often as a weight-1 sentence
+tags   = ["video"]
+
+[[sentences]]
+text   = "{Que|Olha que} {adj}, {reacao} {:amor} [{demais|muito}]!"
+emojis = ["amor"]
+tags   = ["video", "elogio"]
+
+[[sentences]]
+text   = "[{Gente|Pessoal},] {esse|este} resultado ficou [{muito|super}] {adj}"
+emojis = ["aplauso", "fogo"]
+tags   = ["elogio"]
+
+[[sentences]]
+text   = "Vocês já viram algo {tão|} {adj} assim? {:olhar} {convite}!"
+emojis = ["olhar"]
+tags   = ["pergunta"]
+
+[[sentences]]
+text   = "{reacao} [esse conteúdo] [e já mandei pros amigos]"
+emojis = ["amor", "feliz"]
+tags   = ["video"]

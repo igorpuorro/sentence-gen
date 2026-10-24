@@ -1,0 +1,6 @@
+# Template files are private; only the example sentences.toml is tracked
+*.toml
+!sentences.toml
+
+__pycache__/
+.venv/
