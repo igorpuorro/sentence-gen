@@ -33,7 +33,7 @@ is ignored (see `.gitignore`), so your own template files stay local.
 ## Windows app
 
 For people without Python or uv: `sentence_gen.exe` in a one-folder zip (the exe plus
-`_internal/`, built with PyInstaller). Started for the first time, it creates `sentences.toml`
+`_internal/`, built with PyInstaller). Started for the first time without `-f`, it creates `sentences.toml`
 next to the exe from the bundled example; the zip doesn't contain it, so unzipping an update
 over the folder keeps the user's own. `-f NAME` looks in the current folder, then next to the
 exe. A double-clicked exe waits for Enter before its window closes; run from a terminal or
@@ -44,7 +44,7 @@ uv run --group build packaging/build.py   # → build/sentence-gen-<windows|linu
 ```
 
 `packaging/build.py` runs PyInstaller (`packaging/sentence_gen.spec`), adds
-`packaging/windows/README.txt` and `LICENSES/`, self-checks the app from another folder, makes
+the files in `packaging/windows/` (`README.txt`, `minhas_frases.bat`) and `LICENSES/`, self-checks the app from another folder, makes
 sure no template file other than the bundled example is inside, then zips it. On Linux it
 builds the same bundle for Linux, to test the bundling without a Windows PC.
 

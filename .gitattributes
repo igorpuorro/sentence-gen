@@ -1,0 +1,2 @@
+# cmd needs CRLF line endings in .bat files
+*.bat text eol=crlf

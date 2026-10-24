@@ -47,9 +47,17 @@ You can keep several template files in this folder and pick one with -f.
 The sentence is printed in UTF-8. With feed_autoplay (android-instagram-tools) it can write
 the comments: in its settings.txt, --comment-script with the full path of sentence_gen.exe.
 
+minhas_frases.bat runs sentence_gen.exe with your own template file, minhas.toml, from any
+folder -- for programs that take one command without options, like --comment-script:
+  1. Copy sentences.toml to minhas.toml (in this folder) and edit it.
+  2. Call the .bat by its full path, e.g. "C:\Users\me\Desktop\sentence-gen\minhas_frases.bat".
+     Options after it go to sentence_gen.exe: minhas_frases.bat --tag video
+Copy and rename it for more template files (change minhas.toml inside it with Notepad).
+
 
 4. Updating
 -----------
-Unzip the new version over this folder: sentences.toml and your other template files are kept.
+Unzip the new version over this folder: sentences.toml and your other template files are
+kept. minhas_frases.bat is replaced: keep your own changes in a copy with another name.
 
 Third-party licenses: the LICENSES folder.

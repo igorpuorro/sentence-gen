@@ -1,6 +1,6 @@
 [project]
 name = "sentence-gen"
-version = "0.1.0"
+version = "0.1.1"
 description = "Prints one sentence built from TOML templates, with random variations and emojis"
 readme = "README.md"
 requires-python = ">=3.11"

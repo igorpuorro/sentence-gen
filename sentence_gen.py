@@ -24,7 +24,7 @@ import sys
 import tomllib
 from pathlib import Path
 
-__version__ = "0.1.0"  # == pyproject.toml's version == the release tag (packaging/build.py checks)
+__version__ = "0.1.1"  # == pyproject.toml's version == the release tag (packaging/build.py checks)
 
 FROZEN = getattr(sys, "frozen", False)  # the PyInstaller app
 WINDOWS = os.name == "nt"
@@ -148,7 +148,8 @@ def main():
     p.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     args = p.parse_args()
 
-    create_default()
+    if args.file == DEFAULT_FILE:  # with -f the example isn't needed
+        create_default()
     args.file = find_file(args.file)
     settings, slots, emojis, sentences = load(args.file)
     rng = random.Random(args.seed)
