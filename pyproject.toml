@@ -1,0 +1,16 @@
+[project]
+name = "sentence-gen"
+version = "0.1.0"
+description = "Prints one sentence built from TOML templates, with random variations and emojis"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []  # standard library only
+
+[tool.uv]
+# not an installable package: sentence_gen.py is run as a script (`uv run sentence_gen.py`)
+package = false
+
+[dependency-groups]
+build = [
+    "pyinstaller==6.22.3",  # builds the Windows app (packaging/); not needed to run
+]

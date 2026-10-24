@@ -29,3 +29,27 @@ punctuation, and a capital first letter.
 
 Only `sentences.toml` is tracked in git; any other `*.toml` template file in this folder
 is ignored (see `.gitignore`), so your own template files stay local.
+
+## Windows app
+
+For people without Python or uv: `sentence_gen.exe` in a one-folder zip (the exe plus
+`_internal/`, built with PyInstaller). Started for the first time, it creates `sentences.toml`
+next to the exe from the bundled example; the zip doesn't contain it, so unzipping an update
+over the folder keeps the user's own. `-f NAME` looks in the current folder, then next to the
+exe. A double-clicked exe waits for Enter before its window closes; run from a terminal or
+another program (e.g. feed_autoplay's `--comment-script`), it doesn't. Output is UTF-8.
+
+```bash
+uv run --group build packaging/build.py   # → build/sentence-gen-<windows|linux>-<version>.zip + .sha256
+```
+
+`packaging/build.py` runs PyInstaller (`packaging/sentence_gen.spec`), adds
+`packaging/windows/README.txt` and `LICENSES/`, self-checks the app from another folder, makes
+sure no template file other than the bundled example is inside, then zips it. On Linux it
+builds the same bundle for Linux, to test the bundling without a Windows PC.
+
+**Releases:** set the new version in `pyproject.toml` and `__version__` in `sentence_gen.py`,
+commit, then push a tag `v<version>`. GitHub Actions (`.github/workflows/windows-release.yml`)
+builds on Windows and publishes a Release with the zip, its `.sha256` and
+`packaging/release-notes.md`. Run by hand (Actions → windows-release → Run workflow), it only
+builds; the zip is the run's artifact.

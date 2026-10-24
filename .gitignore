@@ -1,6 +1,11 @@
 # Template files are private; only the example sentences.toml is tracked
 *.toml
 !sentences.toml
+!pyproject.toml
 
 __pycache__/
 .venv/
+
+# the Windows app build (packaging/build.py)
+build/
+dist/

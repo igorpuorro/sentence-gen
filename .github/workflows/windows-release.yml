@@ -1,0 +1,46 @@
+# Builds the Windows app (one-folder zip, packaging/build.py).
+# On a version tag (v<version>, e.g. v0.1.0 = the version in pyproject.toml and sentence_gen.py) it
+# publishes a GitHub Release with the zip and its SHA-256; run by hand (Actions tab) it only
+# builds, and the zip is downloadable from the run's artifacts.
+name: windows-release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write  # create the release
+
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      PYTHONUTF8: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+
+      # the exact package versions of uv.lock (--frozen); build.py also self-checks the app
+      # (--version, --help, --check, a few sentences) and the bundle contents
+      - name: Build and check the app
+        run: uv run --frozen --python 3.13 --group build packaging/build.py
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sentence-gen-windows
+          path: |
+            build/sentence-gen-windows-*.zip
+            build/sentence-gen-windows-*.zip.sha256
+
+      - name: Publish the release
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $files = Get-ChildItem build/sentence-gen-windows-*.zip, build/sentence-gen-windows-*.zip.sha256
+          gh release create "$env:GITHUB_REF_NAME" $files.FullName `
+            --title "sentence-gen $env:GITHUB_REF_NAME for Windows" `
+            --notes-file packaging/release-notes.md

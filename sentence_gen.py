@@ -13,15 +13,27 @@ Markers nest: [{muito|super} {adj}]. Trailing emojis follow [settings] emoji_cha
 
 Usage:
     uv run sentence_gen.py [-f sentences.toml] [--tag TAG] [--no-emoji] [--seed N] [--check]
+    sentence_gen.exe [same options]    (the Windows app, packaging/build.py)
 """
 import argparse
+import os
 import random
 import re
+import shutil
 import sys
 import tomllib
 from pathlib import Path
 
-DEFAULT_FILE = Path(__file__).with_name("sentences.toml")
+__version__ = "0.1.0"  # == pyproject.toml's version == the release tag (packaging/build.py checks)
+
+FROZEN = getattr(sys, "frozen", False)  # the PyInstaller app
+WINDOWS = os.name == "nt"
+# the app keeps sentences.toml next to the exe, whatever the current folder; the copy bundled in
+# _internal is the default it creates on first start (not in the zip itself, so unzipping an
+# update over the folder keeps the user's own)
+APP_DIR = Path(sys.executable).parent if FROZEN else Path(__file__).parent
+BUNDLE_DIR = Path(getattr(sys, "_MEIPASS", APP_DIR))
+DEFAULT_FILE = APP_DIR / "sentences.toml"
 INNERMOST = re.compile(r"\{[^{}\[\]]*\}|\[[^{}\[\]]*\]")  # a marker with no marker inside
 REFERENCE = re.compile(r"\{(:?)([\w-]+)\}")  # {slot} or {:pool}
 MAX_STEPS = 1000  # guards against slots that expand into themselves
@@ -103,6 +115,23 @@ def tidy(text):
     return text[:1].upper() + text[1:]
 
 
+def find_file(path):
+    """The template file as given, else the one of that name next to the app."""
+    if path.exists() or path.is_absolute() or not (APP_DIR / path).exists():
+        return path
+    return APP_DIR / path
+
+
+def create_default():
+    """Windows app, first start: put the example sentences.toml next to the exe."""
+    if FROZEN and not DEFAULT_FILE.exists():
+        try:
+            shutil.copy(BUNDLE_DIR / "sentences.toml", DEFAULT_FILE)
+            print(f"created {DEFAULT_FILE} with example sentences: edit it with Notepad", file=sys.stderr)
+        except OSError as e:
+            print(f"couldn't create {DEFAULT_FILE}: {e.strerror or e}", file=sys.stderr)
+
+
 def generate(sentence, settings, slots, emojis, rng, use_emoji=True):
     text = tidy(expand(sentence["text"], slots, emojis, rng, use_emoji))
     tail = trailing_emojis(sentence, settings, emojis, rng) if use_emoji else ""
@@ -116,8 +145,11 @@ def main():
     p.add_argument("--no-emoji", action="store_true", help="no emojis at all")
     p.add_argument("--seed", type=int, help="same output for the same seed")
     p.add_argument("--check", action="store_true", help="validate the file and print one expansion per sentence")
+    p.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     args = p.parse_args()
 
+    create_default()
+    args.file = find_file(args.file)
     settings, slots, emojis, sentences = load(args.file)
     rng = random.Random(args.seed)
     if args.tag:
@@ -138,5 +170,40 @@ def main():
     return 0
 
 
+def owns_console():
+    """Windows app started by a double-click: the console window belongs to it alone (from a
+    terminal or another program, they share it) -- then it must not close before it can be read."""
+    if not (FROZEN and WINDOWS):
+        return False
+    try:
+        import ctypes
+        return ctypes.windll.kernel32.GetConsoleProcessList((ctypes.c_uint * 2)(), 2) <= 1
+    except Exception:
+        return False
+
+
+def entry():
+    """main(), with UTF-8 output (emojis on an old Windows console or into a pipe) and, in a
+    double-clicked app's own window, a wait for Enter at the end, after errors too."""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass
+    try:
+        code = main()
+    except SystemExit as e:
+        code = e.code
+        if isinstance(code, str):  # sys.exit("message"): print it before the wait
+            print(code, file=sys.stderr)
+            code = 1
+    if owns_console():
+        try:
+            input("\nPress Enter to close this window ")
+        except EOFError:
+            pass
+    return code
+
+
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(entry())
